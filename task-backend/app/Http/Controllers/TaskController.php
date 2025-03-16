@@ -75,7 +75,7 @@ class TaskController extends Controller
 
         $task->update($validated);
 
-        return response()->json($task);
+        return response()->json(['message' => 'Task updated successfully']);
     }
 
     /**
@@ -91,6 +91,6 @@ class TaskController extends Controller
         }
 
         $task->delete();
-        return response()->json(['message' => 'Task deleted']);
+        return response()->json(['message' => 'Task deleted successfully']);
     }
 }
