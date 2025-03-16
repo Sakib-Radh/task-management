@@ -1,12 +1,16 @@
 import { createRouter, createWebHistory } from "vue-router";
-import { useStore } from "vuex";
+import store from "@/store";
 import LoginView from "../views/LoginView.vue";
 import RegisterView from "../views/RegisterView.vue";
 import TaskManagement from "../views/TaskManagementView.vue";
 
 const routes = [
-  { path: "/login", component: LoginView },
-  { path: "/register", component: RegisterView },
+  { path: "/login", component: LoginView,
+    meta: { requiresGuest: true }
+  },
+  { path: "/register", component: RegisterView,
+    meta: { requiresGuest: true }
+  },
   {
     path: "/tasks",
     component: TaskManagement,
@@ -21,11 +25,11 @@ const router = createRouter({
 
 // Navigation Guard
 router.beforeEach((to, from, next) => {
-  const store = useStore();
   const isAuthenticated = store.getters.isAuthenticated;
-
   if (to.meta.requiresAuth && !isAuthenticated) {
     next("/login");
+  } else if (to.meta.requiresGuest && isAuthenticated) {
+    next("/tasks");
   } else {
     next();
   }
