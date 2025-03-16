@@ -142,7 +142,7 @@
 
     const toggleComplete = async (t) => {
       try {
-        await axios.put(`/tasks/${t.id}`, { completed: !t.completed });
+        await axios.put(`/tasks/${t.id}`, { ...t, completed: !t.completed });
         t.completed = !t.completed;
       } catch (error) {
         console.error("Error toggling task:", error);
