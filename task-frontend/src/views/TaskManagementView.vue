@@ -36,7 +36,7 @@
                   <button class="btn btn-success btn-sm me-2" @click="toggleComplete(t)">
                     {{ t.completed ? "Undo" : "Complete" }}
                   </button>
-                  <button class="btn btn-warning btn-sm me-2" @click="editTask(t)">Edit</button>
+                  <button :disabled="t.completed" class="btn btn-warning btn-sm me-2" @click="editTask(t)">Edit</button>
                   <button class="btn btn-danger btn-sm" @click="deleteTask(t.id)">Delete</button>
                 </div>
               </div>
@@ -142,7 +142,7 @@
 
     const toggleComplete = async (t) => {
       try {
-        await axios.put(`/tasks/${t.id}`, { completed: !t.completed });
+        await axios.put(`/tasks/${t.id}`, { ...t, completed: !t.completed });
         t.completed = !t.completed;
       } catch (error) {
         console.error("Error toggling task:", error);
