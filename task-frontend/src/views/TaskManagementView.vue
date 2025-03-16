@@ -74,85 +74,86 @@
 </template>
   
 <script setup>
-    import { ref, onMounted, computed } from "vue";
-    import { useStore } from "vuex";
-    import axios from '../services/axios';
-    import LogoutButton from "@/components/LogoutButton.vue";
+  import { ref, onMounted, computed } from "vue";
+  import { useStore } from "vuex";
+  import axios from '../services/axios';
+  import LogoutButton from "@/components/LogoutButton.vue";
 
-    const tasks = ref([]);
-    const task = ref({ title: "", body: "" });
-    const editingTask = ref(null);
-    const loading = ref(false);
-    const store = useStore();
+  const tasks = ref([]);
+  const task = ref({ title: "", body: "" });
+  const editingTask = ref(null);
 
-    const userName = computed(() => {
-        const user = store.getters.getUser;
-        return user ? user.name : '';
-    });
+  const loading = ref(false);
+  const store = useStore();
+  const userName = computed(() => {
+      const user = store.getters.getUser;
+      return user ? user.name : '';
+  });
 
-    const fetchTasks = async () => {
-      try {
-        const response = await axios.get("/tasks");
-        tasks.value = response.data;
-      } catch (error) {
-        console.error("Error fetching tasks:", error);
+  const fetchTasks = async () => {
+    try {
+      const response = await axios.get("/tasks");
+      tasks.value = response.data;
+    } catch (error) {
+      console.error("Error fetching tasks:", error);
+    }
+  };
+
+  const addTask = async () => {
+    if (!task.value.title || !task.value.body) return;
+    loading.value = true;
+    try {
+      const response = await axios.post("/tasks", task.value);
+      tasks.value.push(response.data);
+      task.value = { title: "", body: "" };
+    } catch (error) {
+      console.error("Error adding task:", error);
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  const editTask = (t) => {
+    editingTask.value = { ...t };
+  };
+
+  const updateTask = async () => {
+    if (!editingTask.value) return;
+    try {
+      const response = await axios.put(`/tasks/${editingTask.value.id}`, editingTask.value);
+      if(response) {
+        fetchTasks();
       }
-    };
-
-    const addTask = async () => {
-      if (!task.value.title || !task.value.body) return;
-
-      loading.value = true;
-      try {
-        const response = await axios.post("/tasks", task.value);
-        tasks.value.push(response.data);
-        task.value = { title: "", body: "" };
-      } catch (error) {
-        console.error("Error adding task:", error);
-      } finally {
-        loading.value = false;
-      }
-    };
-
-    const editTask = (t) => {
-      editingTask.value = { ...t };
-    };
-
-    const updateTask = async () => {
-      if (!editingTask.value) return;
-
-      try {
-        await axios.put(`/tasks/${editingTask.value.id}`, editingTask.value);
-        const index = tasks.value.findIndex((t) => t.id === editingTask.value.id);
-        if (index !== -1) tasks.value[index] = { ...editingTask.value };
-        editingTask.value = null;
-      } catch (error) {
-        console.error("Error updating task:", error);
-      }
-    };
-
-    const deleteTask = async (id) => {
-      try {
-        await axios.delete(`/tasks/${id}`);
-        tasks.value = tasks.value.filter((t) => t.id !== id);
-      } catch (error) {
-        console.error("Error deleting task:", error);
-      }
-    };
-
-    const toggleComplete = async (t) => {
-      try {
-        await axios.put(`/tasks/${t.id}`, { ...t, completed: !t.completed });
-        t.completed = !t.completed;
-      } catch (error) {
-        console.error("Error toggling task:", error);
-      }
-    };
-
-    const cancelEdit = () => {
       editingTask.value = null;
-    };
+    } catch (error) {
+      console.error("Error updating task:", error);
+    }
+  };
 
-    onMounted(fetchTasks);
+  const deleteTask = async (id) => {
+    try {
+      const response = await axios.delete(`/tasks/${id}`);
+      if(response) {
+        fetchTasks();
+      }
+    } catch (error) {
+      console.error("Error deleting task:", error);
+    }
+  };
+
+  const toggleComplete = async (t) => {
+    try {
+      await axios.put(`/tasks/${t.id}`, { ...t, completed: !t.completed });
+      t.completed = !t.completed;
+    } catch (error) {
+      console.error("Error toggling task:", error);
+    }
+  };
+
+  const cancelEdit = () => {
+    editingTask.value = null;
+  };
+
+  onMounted(fetchTasks);
 </script>
   
